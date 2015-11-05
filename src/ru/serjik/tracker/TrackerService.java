@@ -13,12 +13,9 @@ public class TrackerService extends Service
 {
 	private static final String TAG = TrackerService.class.getName();
 
-	public static final int MOTION_POLL_DELAY = 60000;
-	public static final float MOTION_THRESOLD = 0.5f;
-	public static final int LOCATION_CATCH_TIMEOUT = 30000;
-	public static final int LOCATION_POLL_DELAY = 5000;
-
 	private TrackerServiceBinder binder = new TrackerServiceBinder();
+
+	private TrackerConfiguration trackerConfiguration;
 
 	private WakeUpSheduler wakeUpSheduler;
 	private MotionDetector motionDetector;
@@ -43,8 +40,10 @@ public class TrackerService extends Service
 	{
 		super.onCreate();
 
+		trackerConfiguration = new TrackerConfiguration();
+
 		wakeUpSheduler = new WakeUpSheduler(this);
-		motionDetector = new MotionDetector(this, MOTION_THRESOLD);
+		motionDetector = new MotionDetector(this, trackerConfiguration.motionThresold);
 		locationCatcher = new LocationCatcher(this, motionDetector);
 
 		wakeUpSheduler.sheduleWakeUp(2000, wakeUpShedulerListener);
@@ -77,7 +76,7 @@ public class TrackerService extends Service
 		@Override
 		public void onLocationCatchFinished()
 		{
-			wakeUpSheduler.sheduleWakeUp(MOTION_POLL_DELAY, wakeUpShedulerListener);
+			wakeUpSheduler.sheduleWakeUp(trackerConfiguration.motionPollDelay, wakeUpShedulerListener);
 		}
 	};
 
@@ -86,13 +85,14 @@ public class TrackerService extends Service
 		@Override
 		public void onMotionDetected()
 		{
-			locationCatcher.beginLocationCatch(LOCATION_POLL_DELAY, LOCATION_CATCH_TIMEOUT, locationCatcherListener);
+			locationCatcher.beginLocationCatch(trackerConfiguration.locationPollDelay,
+					trackerConfiguration.locationCatchTimeOut, locationCatcherListener);
 		}
 
 		@Override
 		public void onStillnesDetected()
 		{
-			wakeUpSheduler.sheduleWakeUp(MOTION_POLL_DELAY, wakeUpShedulerListener);
+			wakeUpSheduler.sheduleWakeUp(trackerConfiguration.motionPollDelay, wakeUpShedulerListener);
 		}
 	};
 }
