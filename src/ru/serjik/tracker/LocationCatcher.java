@@ -20,7 +20,7 @@ public class LocationCatcher
 	private LocationManager locationManager;
 	private Handler handler;
 	private Context context;
-	private int catchTimeOut;
+	private int locationCatchTimeOut;
 
 	private MotionDetector motionDetector;
 	private LocationCatcherListener locationCatcherListener;
@@ -33,11 +33,12 @@ public class LocationCatcher
 		locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 	}
 
-	public void beginLocationCatch(int pollDelay, int catchTimeOut, LocationCatcherListener locationCatcherListener)
+	public void beginLocationCatch(int pollDelay, int locationCatchTimeOut,
+			LocationCatcherListener locationCatcherListener)
 	{
 		this.locationCatcherListener = locationCatcherListener;
-		this.catchTimeOut = catchTimeOut;
-		handler.postDelayed(timeOutRunnable, catchTimeOut);
+		this.locationCatchTimeOut = locationCatchTimeOut;
+		handler.postDelayed(timeOutRunnable, locationCatchTimeOut);
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, pollDelay, 0, locationListener);
 	}
 
@@ -49,7 +50,15 @@ public class LocationCatcher
 			Log.i(TAG, location.toString());
 			storeLocation(location);
 			handler.removeCallbacks(timeOutRunnable);
-			motionDetector.beginMotionDetect(motionDetectorListener);
+
+			if (location.getSpeed() < 1.0)
+			{
+				motionDetector.beginMotionDetect(motionDetectorListener);
+			}
+			else
+			{
+				handler.postDelayed(timeOutRunnable, locationCatchTimeOut);
+			}
 		}
 
 		@Override
@@ -116,7 +125,7 @@ public class LocationCatcher
 		@Override
 		public void onMotionDetected()
 		{
-			handler.postDelayed(timeOutRunnable, catchTimeOut);
+			handler.postDelayed(timeOutRunnable, locationCatchTimeOut);
 		}
 
 		@Override
