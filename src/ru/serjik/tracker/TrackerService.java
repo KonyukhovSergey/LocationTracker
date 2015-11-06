@@ -1,10 +1,17 @@
 package ru.serjik.tracker;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Calendar;
+
 import ru.serjik.tracker.LocationCatcher.LocationCatcherListener;
 import ru.serjik.tracker.MotionDetector.MotionDetectorListener;
 import ru.serjik.tracker.WakeUpSheduler.WakeUpShedulerListener;
+import ru.serjik.tracker.data.PositionRecord;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -78,6 +85,12 @@ public class TrackerService extends Service
 		{
 			wakeUpSheduler.sheduleWakeUp(trackerConfiguration.motionPollDelay, wakeUpShedulerListener);
 		}
+
+		@Override
+		public void onLocationCatched(Location location)
+		{
+			storeLocation(location);
+		}
 	};
 
 	private MotionDetectorListener motionDetectorListener = new MotionDetectorListener()
@@ -95,4 +108,32 @@ public class TrackerService extends Service
 			wakeUpSheduler.sheduleWakeUp(trackerConfiguration.motionPollDelay, wakeUpShedulerListener);
 		}
 	};
+
+	public static String fileName(Calendar cal)
+	{
+		return String.format("tr%02d%02d%02d.gps", cal.get(Calendar.YEAR) % 100, cal.get(Calendar.MONTH),
+				cal.get(Calendar.DAY_OF_MONTH));
+	}
+
+	private void storeLocation(Location location)
+	{
+		Calendar cal = Calendar.getInstance();
+		cal.setTimeInMillis(location.getTime());
+
+		PositionRecord positionRecord = new PositionRecord(cal.get(Calendar.HOUR_OF_DAY) * 60 * 60
+				+ cal.get(Calendar.MINUTE) * 60 + cal.get(Calendar.SECOND), location.getAccuracy(),
+				(float) location.getLatitude(), (float) location.getLongitude());
+
+		try
+		{
+			OutputStream outputStream = openFileOutput(fileName(cal), Context.MODE_PRIVATE | Context.MODE_APPEND);
+			positionRecord.write(outputStream);
+			outputStream.close();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
 }

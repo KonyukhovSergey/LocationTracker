@@ -1,4 +1,4 @@
-package ru.serjik.tracker.ui;
+package ru.serjik.ui;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -9,8 +9,8 @@ import java.util.List;
 
 import ru.serjik.perfectgpstracker.R;
 import ru.serjik.tracker.LocationCatcher;
-import ru.serjik.tracker.PositionRecord;
 import ru.serjik.tracker.TrackerService;
+import ru.serjik.tracker.data.PositionRecord;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -37,7 +37,7 @@ public class MainActivity extends Activity implements OnClickListener, ServiceCo
 		cal.setTimeInMillis(System.currentTimeMillis());
 		buttonRefresh = (Button) findViewById(R.id.button_refresh);
 		buttonRefresh.setOnClickListener(this);
-		
+
 		startService(new Intent(this, TrackerService.class));
 	}
 
@@ -86,7 +86,7 @@ public class MainActivity extends Activity implements OnClickListener, ServiceCo
 
 		try
 		{
-			InputStream is = new BufferedInputStream(context.openFileInput(LocationCatcher.fileName(cal)));
+			InputStream is = new BufferedInputStream(context.openFileInput(TrackerService.fileName(cal)));
 
 			while (is.available() > 0)
 			{

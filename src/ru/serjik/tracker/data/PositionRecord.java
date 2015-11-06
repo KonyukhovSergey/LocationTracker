@@ -1,4 +1,4 @@
-package ru.serjik.tracker;
+package ru.serjik.tracker.data;
 
 import java.io.IOException;
 import java.io.InputStream;

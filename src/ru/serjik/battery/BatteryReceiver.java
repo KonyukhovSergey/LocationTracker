@@ -1,4 +1,4 @@
-package ru.serjik.tracker;
+package ru.serjik.battery;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
